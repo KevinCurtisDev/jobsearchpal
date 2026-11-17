@@ -131,7 +131,7 @@ jobs:
           load: true
           tags: offerlight-frontend:ci
       - name: Scan images
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: offerlight-backend:ci
           severity: CRITICAL,HIGH
