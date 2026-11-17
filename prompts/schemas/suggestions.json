@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Suggestions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "suggestions"
+  ],
+  "properties": {
+    "suggestions": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "path",
+          "before",
+          "after",
+          "reason"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "reword",
+              "reorder",
+              "ask"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "description": "JSON pointer into the CV"
+          },
+          "before": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string",
+            "description": "Replacement text, or the question to ask when kind is 'ask'"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      }
+    }
+  }
+}

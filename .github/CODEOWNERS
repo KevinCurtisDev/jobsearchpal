@@ -1,0 +1,5 @@
+# Replace with GitHub usernames. Owners must review security-sensitive areas.
+*                       @OWNER
+/backend/app/auth/      @OWNER
+/docs/06-security.md    @OWNER
+/infra/                 @OWNER

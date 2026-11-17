@@ -1,0 +1,115 @@
+{
+  "description": "Phrases the writing checker flags. 'avoid' = always flag; 'review' = flag with softer wording. Suggestions are plainer alternatives.",
+  "avoid": [
+    {
+      "phrase": "spearheaded",
+      "suggest": "Led"
+    },
+    {
+      "phrase": "results-driven",
+      "suggest": "Remove; show a result instead"
+    },
+    {
+      "phrase": "dynamic",
+      "suggest": "Remove"
+    },
+    {
+      "phrase": "synergy",
+      "suggest": "Remove"
+    },
+    {
+      "phrase": "leveraged",
+      "suggest": "Used"
+    },
+    {
+      "phrase": "passionate about",
+      "suggest": "Interested in, or show it with an example"
+    },
+    {
+      "phrase": "proven track record",
+      "suggest": "Name the result"
+    },
+    {
+      "phrase": "go-getter",
+      "suggest": "Remove"
+    },
+    {
+      "phrase": "think outside the box",
+      "suggest": "Remove"
+    },
+    {
+      "phrase": "hard-working",
+      "suggest": "Show it with an example"
+    },
+    {
+      "phrase": "team player",
+      "suggest": "Show collaboration with an example"
+    },
+    {
+      "phrase": "detail-oriented",
+      "suggest": "Show accuracy with an example"
+    },
+    {
+      "phrase": "self-starter",
+      "suggest": "Show initiative with an example"
+    },
+    {
+      "phrase": "best-in-class",
+      "suggest": "Remove"
+    },
+    {
+      "phrase": "cutting-edge",
+      "suggest": "Name the technology"
+    },
+    {
+      "phrase": "orchestrated",
+      "suggest": "Organised, ran"
+    },
+    {
+      "phrase": "utilised",
+      "suggest": "Used"
+    },
+    {
+      "phrase": "responsible for",
+      "suggest": "Start with what you did: Led, Built, Ran"
+    },
+    {
+      "phrase": "in today's fast-paced",
+      "suggest": "Remove"
+    },
+    {
+      "phrase": "seasoned professional",
+      "suggest": "State years and area"
+    },
+    {
+      "phrase": "delve",
+      "suggest": "Look into, analyse"
+    },
+    {
+      "phrase": "tapestry",
+      "suggest": "Remove"
+    },
+    {
+      "phrase": "testament to",
+      "suggest": "Remove"
+    }
+  ],
+  "review": [
+    {
+      "phrase": "helped",
+      "suggest": "Say what you did"
+    },
+    {
+      "phrase": "worked on",
+      "suggest": "Say what you did"
+    },
+    {
+      "phrase": "various",
+      "suggest": "Name them"
+    },
+    {
+      "phrase": "etc.",
+      "suggest": "Name the important ones"
+    }
+  ]
+}

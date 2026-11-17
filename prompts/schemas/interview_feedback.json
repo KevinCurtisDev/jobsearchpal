@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InterviewFeedback",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "worked_well",
+    "biggest_improvement",
+    "structure"
+  ],
+  "properties": {
+    "worked_well": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "biggest_improvement": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "example_rewrite": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 600
+    },
+    "structure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "situation",
+        "task",
+        "action",
+        "result"
+      ],
+      "properties": {
+        "situation": {
+          "type": "boolean"
+        },
+        "task": {
+          "type": "boolean"
+        },
+        "action": {
+          "type": "boolean"
+        },
+        "result": {
+          "type": "boolean"
+        },
+        "reflection": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "questions": [
+    {
+      "key": "tell_me_about_yourself",
+      "question": "Tell me about yourself",
+      "really_asking": "Can you summarise why you fit, clearly and briefly?",
+      "how_to_answer": "Your elevator pitch: present role, relevant past, why this job next. About 60–90 seconds.",
+      "links_to": "pitch",
+      "target_seconds": [
+        60,
+        90
+      ]
+    },
+    {
+      "key": "why_this_role",
+      "question": "Why this role, and why us?",
+      "really_asking": "Have you done your homework, and will you stay?",
+      "how_to_answer": "Two specific things about the company and how they match your experience and goals.",
+      "target_seconds": [
+        45,
+        75
+      ]
+    },
+    {
+      "key": "why_leaving",
+      "question": "Why are you leaving?",
+      "really_asking": "Is there a problem we should worry about?",
+      "how_to_answer": "Forward-looking and positive. Never criticise a past employer.",
+      "target_seconds": [
+        30,
+        60
+      ]
+    },
+    {
+      "key": "greatest_strength",
+      "question": "What is your greatest strength?",
+      "really_asking": "Can you back up a claim?",
+      "how_to_answer": "One strength tied to the role, proved with a short STAR story.",
+      "links_to": "story",
+      "target_seconds": [
+        60,
+        120
+      ]
+    },
+    {
+      "key": "weakness",
+      "question": "What is a weakness?",
+      "really_asking": "Are you self-aware and improving?",
+      "how_to_answer": "A real but non-critical weakness, plus what you are doing about it.",
+      "target_seconds": [
+        45,
+        90
+      ]
+    },
+    {
+      "key": "failure",
+      "question": "Tell me about a time you failed",
+      "really_asking": "Do you own mistakes and learn?",
+      "how_to_answer": "STAR plus reflection. Spend most of the time on what you changed afterwards.",
+      "links_to": "story",
+      "competency": "failure_and_learning",
+      "target_seconds": [
+        90,
+        120
+      ]
+    },
+    {
+      "key": "conflict",
+      "question": "Tell me about a conflict at work",
+      "really_asking": "Can you disagree well?",
+      "how_to_answer": "STAR focused on how you resolved it and kept the relationship.",
+      "links_to": "story",
+      "competency": "conflict",
+      "target_seconds": [
+        90,
+        120
+      ]
+    },
+    {
+      "key": "three_years",
+      "question": "Where do you see yourself in 3 years?",
+      "really_asking": "Is this role part of your plan?",
+      "how_to_answer": "Growth this role and company can realistically offer.",
+      "target_seconds": [
+        30,
+        60
+      ]
+    },
+    {
+      "key": "salary",
+      "question": "What are your salary expectations?",
+      "really_asking": "Are we in the same range?",
+      "how_to_answer": "A researched range anchored on the advertised salary. You don't need to share your current pay.",
+      "target_seconds": [
+        15,
+        45
+      ]
+    },
+    {
+      "key": "cv_gap",
+      "question": "Can you explain this gap in your CV?",
+      "really_asking": "Is there anything to worry about?",
+      "how_to_answer": "Brief and honest, then move on to what you bring now.",
+      "target_seconds": [
+        20,
+        45
+      ]
+    },
+    {
+      "key": "questions_for_us",
+      "question": "Do you have any questions for us?",
+      "really_asking": "Are you genuinely interested?",
+      "how_to_answer": "Two or three prepared questions about the team, success in the role, or next steps.",
+      "target_seconds": [
+        30,
+        90
+      ]
+    }
+  ]
+}

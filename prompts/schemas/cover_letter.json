@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CoverLetter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "paragraphs"
+  ],
+  "properties": {
+    "paragraphs": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 900
+      }
+    },
+    "word_count": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "competencies": [
+    {
+      "key": "leadership",
+      "label": "Leadership",
+      "prompt": "A time you led people or a piece of work without being told to."
+    },
+    {
+      "key": "teamwork",
+      "label": "Teamwork",
+      "prompt": "A time you helped a team reach something you couldn't alone."
+    },
+    {
+      "key": "problem_solving",
+      "label": "Problem solving",
+      "prompt": "A tricky problem you worked out, and how."
+    },
+    {
+      "key": "influence",
+      "label": "Influence",
+      "prompt": "A time you changed someone's mind with evidence."
+    },
+    {
+      "key": "initiative",
+      "label": "Initiative",
+      "prompt": "Something you started or improved on your own."
+    },
+    {
+      "key": "conflict",
+      "label": "Conflict",
+      "prompt": "A disagreement you handled well."
+    },
+    {
+      "key": "failure_and_learning",
+      "label": "Failure and learning",
+      "prompt": "Something that went wrong, and what you changed afterwards."
+    },
+    {
+      "key": "communication",
+      "label": "Communication",
+      "prompt": "A time you explained something complex simply."
+    },
+    {
+      "key": "customer_focus",
+      "label": "Customer focus",
+      "prompt": "A time you went beyond what a customer or user expected."
+    }
+  ],
+  "outside_work_prompts": [
+    "Volunteering",
+    "Sport or clubs",
+    "Caring for family",
+    "Study or courses",
+    "Side projects",
+    "Travel or living abroad"
+  ]
+}

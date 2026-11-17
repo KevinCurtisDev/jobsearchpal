@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LinkedInRewrite",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "section", "after", "reason"],
+        "properties": {
+          "kind": {"enum": ["rewrite", "ask"]},
+          "section": {"enum": ["headline", "about", "position"]},
+          "position_index": {"type": "integer", "minimum": 0, "description": "Index into the profile's positions, for section=position"},
+          "before": {"type": "string"},
+          "after": {"type": "string", "description": "Replacement text, or the question to ask when kind is 'ask'"},
+          "reason": {"type": "string", "maxLength": 200}
+        }
+      }
+    }
+  }
+}

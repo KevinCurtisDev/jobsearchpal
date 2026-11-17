@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CvParse",
+  "type": "object",
+  "additionalProperties": true,
+  "description": "Partial CV matching backend/app/schemas/cv.schema.json for one section",
+  "properties": {
+    "roles": {
+      "type": "array"
+    },
+    "education": {
+      "type": "array"
+    },
+    "skills": {
+      "type": "array"
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "extras": {
+      "type": "array"
+    }
+  }
+}

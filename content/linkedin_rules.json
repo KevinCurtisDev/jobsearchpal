@@ -1,0 +1,51 @@
+{
+  "description": "Rules for the LinkedIn profile section. Edit here, not in code. Limits checked October 2026; LinkedIn changes them occasionally — re-check every 6 months (see docs/14-content-guidelines.md).",
+  "limits": {
+    "headline": 220,
+    "about": 2600,
+    "position_title": 100,
+    "position_description": 2000
+  },
+  "checks": [
+    {"id": "headline_missing", "field": "headline", "severity": "high", "rule": "missing", "message": "Add a headline. It shows next to your name in every search result and message."},
+    {"id": "headline_is_just_title", "field": "headline", "severity": "medium", "rule": "equals_current_title", "message": "Your headline only repeats your job title. Add what you do and for whom, using words recruiters search for."},
+    {"id": "headline_too_short", "field": "headline", "severity": "low", "rule": "min_chars", "value": 40, "message": "Your headline is short. You have up to 220 characters; most strong headlines use 80–160."},
+    {"id": "headline_too_long", "field": "headline", "severity": "high", "rule": "max_chars", "value": 220, "message": "Your headline is over LinkedIn's 220-character limit."},
+    {"id": "about_missing", "field": "about", "severity": "high", "rule": "missing", "message": "Add an About section. It is the one place to explain, in your own words, what you do and what you want next."},
+    {"id": "about_short", "field": "about", "severity": "medium", "rule": "min_chars", "value": 400, "message": "Your About section is short. Aim for three short paragraphs: what you do, evidence, what you are looking for."},
+    {"id": "about_too_long", "field": "about", "severity": "high", "rule": "max_chars", "value": 2600, "message": "Your About section is over LinkedIn's 2,600-character limit."},
+    {"id": "about_hook", "field": "about", "severity": "low", "rule": "first_line_max_chars", "value": 200, "message": "Only the first few lines show before 'see more'. Put the most important sentence first and keep it short."},
+    {"id": "about_third_person", "field": "about", "severity": "low", "rule": "third_person", "message": "Your About reads in the third person. LinkedIn profiles usually use 'I' — it sounds more natural."},
+    {"id": "position_no_description", "field": "positions", "severity": "medium", "rule": "recent_without_description", "value": 2, "message": "Your two most recent roles have no description. Add 2–4 lines on what you achieved."},
+    {"id": "position_description_too_long", "field": "positions", "severity": "high", "rule": "description_max_chars", "value": 2000, "message": "A role description is over LinkedIn's 2,000-character limit."},
+    {"id": "skills_few", "field": "skills", "severity": "medium", "rule": "min_count", "value": 5, "message": "List at least 5 skills. Recruiters filter searches by skill."},
+    {"id": "banned_phrases", "field": "all_text", "severity": "low", "rule": "banned_phrases", "message": "Some phrases are overused on LinkedIn and read as filler. Replace them with something specific."}
+  ],
+  "manual_checklist": [
+    {"id": "custom_url", "text": "Set a custom public URL (linkedin.com/in/your-name) and use it on your CV."},
+    {"id": "location", "text": "Set your location to where you want to work. Recruiters filter by location."},
+    {"id": "open_to_work", "text": "Decide on 'Open to work': recruiters-only is private to recruiters (not guaranteed to hide it from your current employer's recruiters); the public banner is visible to everyone. Both are fine — choose what suits your situation."},
+    {"id": "photo", "text": "Use a clear, recent photo of your face with nothing else in it. We give tips only — we never analyse photos."},
+    {"id": "featured", "text": "Add one or two Featured items that show your work (a project, article or portfolio)."},
+    {"id": "contact", "text": "Check which contact details are visible to whom in your Contact info settings."}
+  ],
+  "linkedin_banned_phrases": [
+    {"phrase": "thought leader", "suggest": "Say what you have written or spoken about"},
+    {"phrase": "ninja", "suggest": "Remove"},
+    {"phrase": "guru", "suggest": "Remove"},
+    {"phrase": "rockstar", "suggest": "Remove"},
+    {"phrase": "visionary", "suggest": "Remove"},
+    {"phrase": "game-changer", "suggest": "Say what changed"},
+    {"phrase": "seasoned professional", "suggest": "Say how many years and in what"},
+    {"phrase": "proven track record", "suggest": "Give one example"},
+    {"phrase": "humbled and honoured", "suggest": "Remove"},
+    {"phrase": "on a mission to", "suggest": "Say what you do"},
+    {"phrase": "helping companies unlock", "suggest": "Say what you help them do, concretely"}
+  ],
+  "keyword_gap": {
+    "min_ads_for_gap": 30,
+    "min_share_to_suggest": 0.2,
+    "max_gaps_shown": 8,
+    "note": "Gaps come from skills that appear in at least 20% of recent ads for the user's target role. Under 30 ads, show nothing rather than a weak list."
+  }
+}

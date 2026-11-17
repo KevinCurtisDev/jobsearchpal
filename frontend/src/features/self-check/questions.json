@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "checked": "2026-10-22",
+  "intro": "Eight questions about your current job. Your answers stay in your browser: nothing is sent or saved.",
+  "questions": [
+    {
+      "id": "day_to_day",
+      "dimension": "How you feel day to day",
+      "text": "Most weeks, how do you feel about going to work?",
+      "options": [
+        {
+          "label": "I mostly look forward to it",
+          "push": 0
+        },
+        {
+          "label": "It's fine; some good days, some bad",
+          "push": 1
+        },
+        {
+          "label": "I often dread it",
+          "push": 2
+        },
+        {
+          "label": "I dread it most days",
+          "push": 3
+        }
+      ]
+    },
+    {
+      "id": "stress",
+      "dimension": "Stress",
+      "text": "How often does work stress follow you home, into your evenings, weekends or sleep?",
+      "options": [
+        {
+          "label": "Rarely",
+          "push": 0
+        },
+        {
+          "label": "Sometimes, in busy periods",
+          "push": 1
+        },
+        {
+          "label": "Often",
+          "push": 2
+        },
+        {
+          "label": "Most of the time, and it's affecting my sleep or health",
+          "push": 3
+        }
+      ],
+      "fixable": true,
+      "durability": "lasts"
+    },
+    {
+      "id": "pay",
+      "dimension": "Pay",
+      "text": "Compared with similar roles, do you think you're paid fairly?",
+      "options": [
+        {
+          "label": "Yes, at or above what similar roles pay",
+          "push": 0
+        },
+        {
+          "label": "About right",
+          "push": 0
+        },
+        {
+          "label": "A bit below",
+          "push": 2
+        },
+        {
+          "label": "Well below",
+          "push": 3
+        },
+        {
+          "label": "I'm not sure",
+          "push": 1,
+          "unsure": true
+        }
+      ],
+      "fixable": true,
+      "durability": "fades"
+    },
+    {
+      "id": "growth",
+      "dimension": "Growth",
+      "text": "Are you still learning and moving forward in this job?",
+      "options": [
+        {
+          "label": "Yes, clearly",
+          "push": 0
+        },
+        {
+          "label": "Somewhat",
+          "push": 1
+        },
+        {
+          "label": "Not really",
+          "push": 2
+        },
+        {
+          "label": "No, and there's no path to change that here",
+          "push": 3
+        }
+      ],
+      "fixable": true,
+      "durability": "lasts"
+    },
+    {
+      "id": "people",
+      "dimension": "Your manager and team",
+      "text": "How do you get on with your manager and the people you work with?",
+      "options": [
+        {
+          "label": "Well; I feel supported",
+          "push": 0
+        },
+        {
+          "label": "Fine, mostly",
+          "push": 1
+        },
+        {
+          "label": "There's real friction",
+          "push": 2
+        },
+        {
+          "label": "It's making work very hard",
+          "push": 3
+        }
+      ],
+      "fixable": true,
+      "durability": "lasts"
+    },
+    {
+      "id": "life_fit",
+      "dimension": "Fit with your life",
+      "text": "How well do the hours, commute and flexibility fit the rest of your life?",
+      "options": [
+        {
+          "label": "Well",
+          "push": 0
+        },
+        {
+          "label": "Mostly fine",
+          "push": 1
+        },
+        {
+          "label": "It's a strain",
+          "push": 2
+        },
+        {
+          "label": "It doesn't work any more",
+          "push": 3
+        }
+      ],
+      "fixable": true,
+      "durability": "lasts"
+    },
+    {
+      "id": "security",
+      "dimension": "Security",
+      "text": "How secure does your job feel over the next year?",
+      "options": [
+        {
+          "label": "Secure",
+          "push": 0
+        },
+        {
+          "label": "Probably fine",
+          "push": 1
+        },
+        {
+          "label": "Uncertain",
+          "push": 2
+        },
+        {
+          "label": "I expect to lose it, or it's ending",
+          "push": 3
+        }
+      ],
+      "durability": "lasts"
+    },
+    {
+      "id": "time",
+      "dimension": "Time for a search",
+      "text": "If you started looking, how much time could you give it each week?",
+      "options": [
+        {
+          "label": "Under 2 hours",
+          "hours": 1
+        },
+        {
+          "label": "2 to 5 hours",
+          "hours": 3
+        },
+        {
+          "label": "5 to 10 hours",
+          "hours": 7
+        },
+        {
+          "label": "More than 10 hours",
+          "hours": 12
+        }
+      ],
+      "practical": true
+    }
+  ],
+  "verdicts": {
+    "stay": {
+      "title": "It sounds like a good place to be, for now.",
+      "body": "Nothing in your answers is pushing you out. Keep your CV up to date and your LinkedIn current, so that if something changes, or a great role appears, you're ready without starting from scratch."
+    },
+    "fix_first": {
+      "title": "It might be worth trying to fix one thing first.",
+      "body": "Most of your job works for you, but one area doesn't. Problems like this can sometimes be solved where you are, which is faster and less tiring than a search. If raising it doesn't change anything within a few months, that's a clear signal to start looking."
+    },
+    "explore": {
+      "title": "It's worth exploring quietly.",
+      "body": "A few things aren't right, but nothing is urgent. A light search lets you see what's out there without pressure: update your CV, track a few applications to roles that would genuinely be better, and see what comes back."
+    },
+    "move": {
+      "title": "Your answers suggest it's time to look.",
+      "body": "Several important things aren't working. That's a good reason to plan a proper search, one you can keep up for a few months, rather than a burst of applications on a bad day."
+    }
+  },
+  "fix_tips": {
+    "stress": "Talk to your manager about workload: name the two or three things taking most of your time and ask what can move. If your employer has an Employee Assistance Programme, it's confidential and free to use.",
+    "pay": "Gather salary ranges from job ads for similar roles in your area, then ask for a pay review with those figures. A specific, evidenced request is easier to say yes to.",
+    "growth": "Ask your manager what a next step would look like here and what you'd need to show. If there's no answer, that's useful information too.",
+    "people": "If it's one relationship, a direct, calm conversation sometimes helps; if it's more serious, HR or a trusted senior colleague can be the next step.",
+    "life_fit": "Ask whether hours, hybrid days or start times can change. Many employers have more flexibility than they advertise."
+  },
+  "wellbeing_note": "If work stress is affecting your sleep or health, look after that first: it matters more than any job search. Your GP is a good place to start, and so is your employer's Employee Assistance Programme if there is one.",
+  "pay_unsure_note": "Not sure what fair pay looks like? Compare salary ranges in job ads for similar roles in your area. Hearback shows salary ranges on matched jobs where employers publish them.",
+  "expectations": {
+    "funnel": "Out of 100 people who apply for a typical role, about 8 get a first call, about 3 reach the final interviews and about 1 gets the offer. Silence is the usual outcome, not a verdict on you.",
+    "source": "Gem conversion benchmarks (about 12 million candidates, mostly US).",
+    "pace": "Plan a pace you could keep up for a few months, rather than a burst of applications on a bad day.",
+    "hours_per_application": 1.5,
+    "hours_per_application_note": "Assumes about 1.5 hours to find, tailor and send one good application. Adjust to your own pace.",
+    "while_employed": [
+      "Use your own phone, laptop and email for your search, never your work ones.",
+      "On LinkedIn, 'Open to work' can be set to recruiters only.",
+      "Check your notice period in your contract before you accept anything.",
+      "Book interviews early or late in the day, or take leave; you don't owe anyone an explanation."
+    ]
+  },
+  "in_a_year": {
+    "question": "Would this still bother you in a year?",
+    "labels": {
+      "lasts": "People rarely get used to this. A solid reason.",
+      "fades": "Feels big now, but the lift from fixing it tends to fade."
+    },
+    "glow_note": "New jobs usually feel great for the first few months, then settle. Studies of people who change jobs find satisfaction jumps after a move and drifts back over the following year. That's not a reason to stay. It's a reason to move towards something specific, not just away from a bad week.",
+    "fades_only_note": "Your main reason is one that tends to fade. A pay rise, a bigger title or a fresh start feels great at first, then becomes normal. Before you move for this alone, check that the new job would also be better on something that lasts: your manager and team, your commute and hours, how much you're learning.",
+    "sources": [
+      {
+        "label": "Boswell, Boudreau & Tichy (2005), The relationship between employee job change and job satisfaction: the honeymoon-hangover effect, Journal of Applied Psychology 90(5)",
+        "url": "https://en.wikipedia.org/wiki/Honeymoon-hangover_effect"
+      },
+      {
+        "label": "Stutzer & Frey (2008), Stress that doesn't pay: the commuting paradox, Scandinavian Journal of Economics 110(2)",
+        "url": "https://wwz.unibas.ch/fileadmin/user_upload/wwz/00_Professuren/Stutzer_Politische_Oekonomie/Publications/Stutzer_Frey_CommutingStress_SJEa.pdf"
+      }
+    ]
+  }
+}

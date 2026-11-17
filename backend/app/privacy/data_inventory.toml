@@ -1,0 +1,1133 @@
+# Offerlight data inventory — the single source of truth for personal data.
+#
+# Every table, column, cache key and processor that touches personal data is declared here,
+# with its purpose, lawful basis, retention, erasure and export behaviour.
+#
+# This file is enforced in code and CI (backend/tests/privacy/):
+#   - the inventory must validate (no category without a lawful basis, retention or erasure rule);
+#   - every table in docs/04-data-model.md and every SQLAlchemy table must be listed here;
+#   - every column of a model must be classified (by its table's default category or an override);
+#   - foreign keys must match the declared erasure behaviour (CASCADE / SET NULL);
+#   - docs/privacy/records-of-processing.md must be regenerated after any change (make privacy-docs).
+#
+# Changing this file changes how we handle people's data. Every change needs owner review
+# (see CLAUDE.md "When to stop and ask") and, where marked, solicitor/DPO review.
+# Engineering specification only, not legal advice.
+
+schema_version = 1
+last_reviewed = "2026-10-20"
+minimum_age = 16                       # self-declared at sign-up; no date of birth is collected
+
+[controller]
+name = "TBC — company to be incorporated (decisions-needed #15)"
+establishment = "Ireland"
+lead_supervisory_authority = "Data Protection Commission (Ireland)"
+uk_regulator = "Information Commissioner's Office"
+uk_representative = "TBC (decisions-needed #16)"
+privacy_contact = "privacy@<domain>"
+dpo = "TBC (decisions-needed #17)"
+
+# ---------------------------------------------------------------------------------------------
+# Processors (sub-processors). A category may only send data to processors listed here.
+# outside_eea = true requires a transfer_mechanism. dpa must be signed before first use.
+# ---------------------------------------------------------------------------------------------
+
+[[processors]]
+id = "hetzner"
+name = "Hetzner Online GmbH"
+service = "Servers, load balancer and object storage (all hosting tiers)"
+location = "Germany / Finland (EU)"
+outside_eea = false
+dpa = "Sign the data processing agreement in the Hetzner console before Stage 0 deploy"
+from_stage = 0
+
+[[processors]]
+id = "scaleway"
+name = "Scaleway SAS"
+service = "Managed PostgreSQL (Tier 1+)"
+location = "France (EU)"
+outside_eea = false
+dpa = "Accept the Scaleway DPA before Tier 1"
+from_stage = 4
+
+[[processors]]
+id = "upstash"
+name = "Upstash, Inc."
+service = "Managed Redis (Tier 1+): sessions cache, rate limits, job queue"
+location = "EU region (eu-west-1 or eu-central-1)"
+outside_eea = true
+transfer_mechanism = "US parent company: EU-US Data Privacy Framework if certified at signing, otherwise Standard Contractual Clauses + transfer impact assessment. Data stored in an EU region."
+dpa = "Sign the Upstash DPA before Tier 1"
+from_stage = 4
+
+[[processors]]
+id = "backup_storage"
+name = "Off-site backup object storage (provider per decisions-needed #2)"
+service = "Encrypted nightly database backups (GPG, key held by owners)"
+location = "EU, different provider from the servers"
+outside_eea = false
+dpa = "Sign before Stage 0 backups start"
+from_stage = 0
+
+[[processors]]
+id = "cloudflare"
+name = "Cloudflare, Inc."
+service = "Turnstile bot check, Pages static hosting, DNS"
+location = "Global network; EU customer data localisation where available"
+outside_eea = true
+transfer_mechanism = "EU-US Data Privacy Framework (verify certification at signing) + Cloudflare DPA with SCCs"
+dpa = "Accept the Cloudflare DPA before Stage 1"
+from_stage = 1
+
+[[processors]]
+id = "amazon_ses"
+name = "Amazon Web Services EMEA SARL (Amazon SES)"
+service = "Transactional email (codes, alerts, digests) and inbound reply capture"
+location = "eu-west-1 (Ireland)"
+outside_eea = true
+transfer_mechanism = "Processing in eu-west-1; US parent: AWS DPA with SCCs, EU-US Data Privacy Framework"
+dpa = "AWS GDPR DPA (part of the AWS service terms) — confirm before Stage 1"
+from_stage = 1
+
+[[processors]]
+id = "anthropic"
+name = "Anthropic (Claude API)"
+service = "Writing suggestions, messy-text parsing, interview answer feedback — only when the user asks"
+location = "United States"
+outside_eea = true
+transfer_mechanism = "Commercial terms with DPA and SCCs; transfer impact assessment. Contact details are removed before every call (app.privacy.ai_guard). Confirm API data-retention terms and request zero data retention if offered."
+dpa = "Sign the Anthropic DPA before Stage 2"
+from_stage = 2
+
+[[processors]]
+id = "stripe"
+name = "Stripe Payments Europe, Ltd."
+service = "Payments and invoices. Stripe holds card data; we never see card numbers."
+location = "Ireland (EU), with transfers to Stripe, Inc. (US)"
+outside_eea = true
+transfer_mechanism = "Stripe DPA with SCCs and EU-US Data Privacy Framework. Stripe is an independent controller for some payment data (fraud, regulatory)."
+dpa = "Stripe DPA (part of the Stripe Services Agreement) — confirm before Stage 4"
+from_stage = 4
+
+[[processors]]
+id = "sentry"
+name = "Functional Software, Inc. (Sentry)"
+service = "Error monitoring. PII scrubbing on (send_default_pii = false + app.privacy.redaction)."
+location = "EU data region (de.sentry.io)"
+outside_eea = true
+transfer_mechanism = "EU data region; US parent: Sentry DPA with SCCs"
+dpa = "Accept the Sentry DPA before Stage 0 error monitoring goes live"
+from_stage = 0
+
+[[processors]]
+id = "plausible"
+name = "Plausible Insights OÜ (or self-hosted Umami — no processor)"
+service = "Cookieless, aggregate page analytics. No personal data stored."
+location = "Germany (EU)"
+outside_eea = false
+dpa = "Accept the Plausible DPA before Stage 4"
+from_stage = 4
+
+# ---------------------------------------------------------------------------------------------
+# Categories of personal data. Each has exactly one lawful basis.
+#
+# lawful_basis: contract (Art 6(1)(b)) | consent (6(1)(a)) | legitimate_interests (6(1)(f))
+#               | legal_obligation (6(1)(c))
+# Special category data also needs art9_condition.
+# retention.policy:
+#   account_lifetime        kept while the account exists; removed by erasure
+#   fixed                   removed `days` after the table's retention_clock column
+#   after_account_deletion  kept `days` after the account is erased (legal reasons only)
+#   until_withdrawn         removed as soon as the linked consent is withdrawn, or by erasure
+#   transient               never stored beyond `seconds` (processing only)
+# on_erasure: delete | anonymise (user link set to NULL; row must not identify anyone after)
+#             | retain_legal (kept for a legal obligation until its retention ends)
+# ---------------------------------------------------------------------------------------------
+
+[[categories]]
+id = "account_identity"
+name = "Account identity"
+description = "Email address, display name, locale, country, account status, plan"
+data_subjects = ["users"]
+purposes = ["Create and run the user's account", "Sign-in by email code", "Service emails"]
+lawful_basis = "contract"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "amazon_ses"]
+source = "user"
+stage = 1
+
+[[categories]]
+id = "authentication"
+name = "Passkeys and sign-in credentials"
+description = "WebAuthn public keys, credential ids, sign counts, authenticator metadata, nicknames"
+data_subjects = ["users"]
+purposes = ["Passwordless sign-in"]
+lawful_basis = "contract"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+export_fields_note = "Nickname, created and last-used dates only; key material is not useful to the user"
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "user"
+stage = 1
+
+[[categories]]
+id = "sessions"
+name = "Sessions and devices"
+description = "Session token hashes, device label, user agent, keyed IP hash, last seen"
+data_subjects = ["users"]
+purposes = ["Keep users signed in", "Show and revoke devices", "Detect account takeover"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0001-security-and-fraud-prevention.md"
+retention = { policy = "fixed", days = 90 }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "upstash", "backup_storage"]
+source = "system"
+stage = 1
+
+[[categories]]
+id = "transient_auth"
+name = "One-time codes, magic links, WebAuthn challenges, rate-limit counters"
+description = "Hashed codes and tokens, keyed hashes of email/IP in rate-limit keys"
+data_subjects = ["users", "people_attempting_sign_up"]
+purposes = ["Verify email ownership", "Prevent brute force and bot sign-ups"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0001-security-and-fraud-prevention.md"
+retention = { policy = "transient", seconds = 3600 }
+on_erasure = "delete"
+export = false
+export_exempt_reason = "Exists for at most one hour and holds only hashes"
+processors = ["hetzner", "upstash"]
+source = "system"
+stage = 0
+
+[[categories]]
+id = "security_audit"
+name = "Security audit log"
+description = "Sign-ins, passkey changes, exports, deletions, consent changes; keyed IP hash"
+data_subjects = ["users"]
+purposes = ["Security investigation", "Demonstrate correct handling of rights requests"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0001-security-and-fraud-prevention.md"
+retention = { policy = "fixed", days = 365 }
+on_erasure = "anonymise"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 1
+
+[[categories]]
+id = "consent_records"
+name = "Consent records"
+description = "Append-only history of each consent: kind, version, granted/withdrawn, time, source"
+data_subjects = ["users"]
+purposes = ["Prove consent was given (GDPR Art 7(1))", "Apply the user's current choices"]
+lawful_basis = "legal_obligation"
+legal_ref = "GDPR Art 7(1) — controller must be able to demonstrate consent"
+retention = { policy = "after_account_deletion", days = 2190 }
+on_erasure = "retain_legal"
+retain_note = "On erasure user_id is replaced by subject_ref (keyed hash of the email) so the record proves consent without identifying the account. 6 years = Irish limitation period for contract claims; confirm with solicitor."
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "user"
+stage = 1
+
+[[categories]]
+id = "ai_usage"
+name = "AI usage and cost records"
+description = "Feature, prompt version, model, token counts, cost — never prompt or response text"
+data_subjects = ["users"]
+purposes = ["Enforce fair-use quotas", "Control AI costs"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0002-service-operation-and-cost-control.md"
+retention = { policy = "fixed", days = 400 }
+on_erasure = "anonymise"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 1
+
+[[categories]]
+id = "cv_content"
+name = "CVs, cover letters and job descriptions"
+description = "Uploaded CV files, structured CV versions, suggestions, ATS checks, cover letters, saved screening answers, pasted job descriptions. May contain third-party data (referees) — the builder advises 'References available on request' and warns before saving referee contact details."
+data_subjects = ["users", "third_parties_named_in_cvs"]
+purposes = ["Build, improve, tailor and export CVs and cover letters"]
+lawful_basis = "contract"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "anthropic"]
+ai_minimisation = "Contact block and links removed; app.privacy.ai_guard blocks the call if an email, phone, PPSN, NI number, IBAN, postcode or URL remains"
+source = "user"
+stage = 2
+
+[[categories]]
+id = "linkedin_profile"
+name = "LinkedIn profile copy and suggestions"
+description = "Headline, About, industry, positions (employer, title, dates, description), skills and education names that the user imported from their own LinkedIn data export, a profile PDF or pasted text; checklist results and rewrite suggestions. The uploaded export ZIP is read in memory and never stored; only profile files are opened (never connections or messages); birth date, address, phone and email are dropped at parse time."
+data_subjects = ["users"]
+purposes = ["Check the user's LinkedIn profile", "Compare it with their CV", "Suggest rewrites the user pastes into LinkedIn themselves"]
+lawful_basis = "contract"
+retention = { policy = "account_lifetime" }
+retention_note = "The user can delete the imported copy at any time from the LinkedIn screen; a new import replaces the old one"
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "anthropic"]
+ai_minimisation = "Only headline, About, industry, the 4 most recent positions and skills are sent, through app.privacy.ai_guard; location and education are not sent"
+source = "user"
+stage = 3
+
+[[categories]]
+id = "waitlist_and_beta_invites"
+name = "Launch waitlist and beta invites"
+description = "Email address of people who asked to hear when Hearback launches or to join the private beta; invite codes and who redeemed them"
+data_subjects = ["prospective_users"]
+purposes = ["Tell people when they can sign up", "Run the invitation-only private beta"]
+lawful_basis = "contract"
+retention = { policy = "fixed", days = 365 }
+retention_note = "Steps taken at the person's request before a contract (Art 6(1)(b)). Rows are also deleted 30 days after the public launch email is sent, or at once on request; nothing else is ever sent to these addresses"
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "amazon_ses"]
+source = "user"
+stage = 4
+
+[[categories]]
+id = "job_preferences"
+name = "Job search preferences"
+description = "Target roles, locations, commute, remote preference, salary floor, excluded companies, digest time. Visa/permit status is optional and treated as high sensitivity (can indicate nationality)."
+data_subjects = ["users"]
+purposes = ["Match jobs to the user", "Send the daily digest at the chosen time", "Show visa-sponsor information when the user asks for it"]
+lawful_basis = "contract"
+sensitivity = "high"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "user"
+stage = 6
+
+[[categories]]
+id = "match_results"
+name = "Job matches and scores"
+description = "Daily ranked matches, scores, reasons, confidence, model version, user actions"
+data_subjects = ["users"]
+purposes = ["Show the daily matches and explain them"]
+lawful_basis = "contract"
+profiling = true
+automated_decision_note = "Advisory only. No decision with legal or similarly significant effect is made; the user decides what to apply for. Reasons are always shown."
+dpia_ref = "docs/privacy/dpia/0001-matching-scores-and-insights.md"
+retention = { policy = "fixed", days = 180 }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 6
+
+[[categories]]
+id = "application_tracking"
+name = "Applications, events, interviews and offers"
+description = "The user's tracker: applications, immutable action log, agency submissions, interview notes, offers, stories, pitches, question prep"
+data_subjects = ["users", "interviewers_named_by_user"]
+purposes = ["Run the tracker", "Reply timings and next steps", "Interview preparation"]
+lawful_basis = "contract"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "anthropic"]
+ai_minimisation = "Interview feedback sends the answer text only, after redaction"
+source = "user"
+stage = 7
+
+[[categories]]
+id = "inbound_email_metadata"
+name = "Captured employer emails — metadata"
+description = "Sender domain, received/sent time, link to application, classification label"
+data_subjects = ["users", "employer_contacts"]
+purposes = ["Track reply timings", "Update the tracker automatically"]
+lawful_basis = "contract"
+third_party_basis = "Employer contacts: legitimate interests of the user and Offerlight in tracking replies to the user's own applications — see LIA 0003"
+lia_ref = "docs/privacy/lia/0003-employer-contacts-in-captured-emails.md"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "amazon_ses"]
+source = "inbound_email"
+stage = 8
+
+[[categories]]
+id = "inbound_email_content"
+name = "Captured employer emails — content"
+description = "Email body (encrypted at rest), raw message in storage, sender address, subject"
+data_subjects = ["users", "employer_contacts"]
+purposes = ["Classify the reply", "Let the user read it in the tracker"]
+lawful_basis = "contract"
+third_party_basis = "As inbound_email_metadata — see LIA 0003"
+lia_ref = "docs/privacy/lia/0003-employer-contacts-in-captured-emails.md"
+retention = { policy = "fixed", days = 90 }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "amazon_ses"]
+source = "inbound_email"
+stage = 8
+
+[[categories]]
+id = "reply_and_rejection_scores"
+name = "Reply classification and rejection assessments"
+description = "Reply labels, probability the rejection was automated, signals, probable cause"
+data_subjects = ["users"]
+purposes = ["Explain likely reasons for rejection to the user"]
+lawful_basis = "contract"
+profiling = true
+automated_decision_note = "Advisory only and shown only to the user. Signals and uncertainty always shown."
+dpia_ref = "docs/privacy/dpia/0001-matching-scores-and-insights.md"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 8
+
+[[categories]]
+id = "practice_audio"
+name = "Interview practice audio"
+description = "Audio track of a practice answer, uploaded only for transcription. Video never leaves the browser."
+data_subjects = ["users"]
+purposes = ["Transcribe a practice answer"]
+lawful_basis = "consent"
+consent_kind = "voice_practice"
+retention = { policy = "fixed", days = 1 }
+retention_note = "Deleted by the transcription job immediately after processing; the daily retention job is the safety net (24 hours)"
+on_erasure = "delete"
+export = false
+export_exempt_reason = "Deleted within 24 hours of upload; never held long enough to export"
+dpia_ref = "docs/privacy/dpia/0002-interview-practice-recordings.md"
+processors = ["hetzner", "backup_storage"]
+source = "user"
+stage = 10
+
+[[categories]]
+id = "practice_transcripts"
+name = "Interview practice transcripts and delivery metrics"
+description = "Transcript, words per minute, filler words, pauses, structure — no face, voice-tone or emotion analysis"
+data_subjects = ["users"]
+purposes = ["Give feedback on practice answers"]
+lawful_basis = "consent"
+consent_kind = "voice_practice"
+retention = { policy = "fixed", days = 30 }
+retention_note = "Kept longer only while the user has ticked 'Keep' on that recording"
+on_erasure = "delete"
+export = true
+dpia_ref = "docs/privacy/dpia/0002-interview-practice-recordings.md"
+processors = ["hetzner", "scaleway", "backup_storage", "anthropic"]
+source = "user"
+stage = 10
+
+[[categories]]
+id = "experiments"
+name = "Experiment assignments"
+description = "Random arm assignment of the user's own applications (for example CV A vs B)"
+data_subjects = ["users"]
+purposes = ["Measure which actions lead to interviews"]
+lawful_basis = "consent"
+consent_kind = "experiments"
+retention = { policy = "until_withdrawn" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 9
+
+[[categories]]
+id = "benchmark_contribution"
+stored_in = "consents table, kind = benchmarks; read by the nightly aggregation job"
+name = "Contribution to anonymised benchmarks"
+description = "Whether the user's outcomes may be included in aggregate cohort statistics (k >= 10). No personal data is stored in the aggregates."
+data_subjects = ["users"]
+purposes = ["Publish cohort benchmarks so users know where they stand"]
+lawful_basis = "consent"
+consent_kind = "benchmarks"
+retention = { policy = "until_withdrawn" }
+retention_note = "Withdrawal excludes the user from the next nightly aggregation; published aggregates cannot identify anyone and are not recalculated retroactively"
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 9
+
+[[categories]]
+id = "fairness_demographics"
+name = "Fairness audit demographics"
+description = "Optional gender, nationality group, age band, disability (yes/no/prefer not) — used only to test our models for bias"
+data_subjects = ["users"]
+purposes = ["Annual fairness audit of matching and scoring models"]
+lawful_basis = "consent"
+consent_kind = "fairness_audit"
+special_category = true
+art9_condition = "explicit_consent"
+sensitivity = "special"
+retention = { policy = "until_withdrawn" }
+on_erasure = "delete"
+export = true
+dpia_ref = "docs/privacy/dpia/0003-fairness-audit-demographics.md"
+storage_rule = "Separate schema `sensitive`, column-level encryption, no foreign key exposed to product queries, never joined in product code, readable only by the audit job"
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "user"
+stage = 11
+
+[[categories]]
+id = "email_preferences"
+stored_in = "consents table, kind = marketing"
+name = "Product news emails (marketing)"
+description = "Opt-in to occasional product news. The daily digest is not marketing: it is part of the service and its on/off switch and time live in user_preferences (contract)."
+data_subjects = ["users"]
+purposes = ["Send product news to people who opted in"]
+lawful_basis = "consent"
+consent_kind = "marketing"
+retention = { policy = "until_withdrawn" }
+retention_note = "Opt-in consent required (ePrivacy Regulations S.I. 336 of 2011 in Ireland, PECR in the UK). Every email has a one-click unsubscribe that records a withdrawal."
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "amazon_ses"]
+source = "user"
+stage = 6
+
+[[categories]]
+id = "billing_records"
+name = "Billing and tax records"
+description = "Stripe customer and subscription ids, plan, invoices, amounts, VAT country"
+data_subjects = ["users"]
+purposes = ["Take payment", "Keep accounting and tax records"]
+lawful_basis = "legal_obligation"
+legal_ref = "Taxes Consolidation Act 1997 s.886 (Ireland) — records kept 6 years; UK HMRC equivalent"
+retention = { policy = "fixed", days = 2190 }
+retention_note = "6 years from the end of the subscription (ended_at), whether or not the account still exists"
+on_erasure = "retain_legal"
+retain_note = "On erasure user_id is replaced by subject_ref (keyed hash) and the row keeps only Stripe ids, amounts, dates and VAT country"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage", "stripe"]
+source = "user"
+stage = 4
+
+[[categories]]
+id = "entitlements"
+name = "Plans, entitlements and guarantee tracking"
+description = "What the user can use, and the state of the interview guarantee conditions"
+data_subjects = ["users"]
+purposes = ["Provide what the user paid for", "Honour the guarantee"]
+lawful_basis = "contract"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 4
+
+[[categories]]
+id = "public_job_ads"
+name = "Job advertisements"
+description = "Job ads from licensed APIs and public ATS boards. May name a recruiter or hiring manager."
+data_subjects = ["recruiters_named_in_ads"]
+purposes = ["Show and match job ads"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0004-job-ads-and-company-data.md"
+retention = { policy = "fixed", days = 365 }
+on_erasure = "delete"
+export = false
+export_exempt_reason = "Not data about our users; recruiters may request access or erasure through privacy@ (manual DSAR)"
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "public_sources"
+stage = 5
+
+[[categories]]
+id = "public_job_ads_raw"
+name = "Raw job API payloads"
+description = "Unprocessed responses from job APIs, kept briefly for debugging the parser"
+data_subjects = ["recruiters_named_in_ads"]
+purposes = ["Debug job ingestion"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0004-job-ads-and-company-data.md"
+retention = { policy = "fixed", days = 30 }
+on_erasure = "delete"
+export = false
+export_exempt_reason = "Not data about our users"
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "public_sources"
+stage = 5
+
+[[categories]]
+id = "user_reports"
+name = "Scam and job reports"
+description = "Reports users make about job ads, with free-text details"
+data_subjects = ["users", "recruiters_named_in_ads"]
+purposes = ["Protect users from fake job ads"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0004-job-ads-and-company-data.md"
+retention = { policy = "fixed", days = 730 }
+on_erasure = "anonymise"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "user"
+stage = 5
+
+[[categories]]
+id = "organisation_membership"
+name = "Organisation membership"
+description = "Which organisation (university, outplacement firm) a user belongs to and their role. Organisations see aggregates only (k >= 10), never individual data."
+data_subjects = ["users", "organisation_staff"]
+purposes = ["Give organisations aggregate progress reports"]
+lawful_basis = "contract"
+retention = { policy = "account_lifetime" }
+on_erasure = "delete"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "user"
+stage = 12
+
+[[categories]]
+id = "rights_requests"
+name = "Data protection rights requests"
+description = "Requests to access, export, erase, rectify, restrict or object; deadlines; outcome"
+data_subjects = ["users", "recruiters_named_in_ads", "employer_contacts"]
+purposes = ["Handle rights requests within the legal deadline and prove we did"]
+lawful_basis = "legal_obligation"
+legal_ref = "GDPR Art 12 and Art 5(2) accountability"
+retention = { policy = "fixed", days = 1095 }
+on_erasure = "retain_legal"
+retain_note = "Requester identity reduced to subject_ref (keyed hash) once the request is closed"
+export = true
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "user"
+stage = 1
+
+[[categories]]
+id = "erasure_tombstones"
+name = "Erasure tombstones"
+description = "Keyed hash of an erased user's id and email, erased_at. Used to re-apply erasure after a backup restore."
+data_subjects = ["former_users"]
+purposes = ["Make erasure stick after a backup restore"]
+lawful_basis = "legal_obligation"
+legal_ref = "GDPR Art 17 — erasure must remain effective"
+retention = { policy = "fixed", days = 60 }
+retention_note = "Longer than the backup retention (30 days) so every backup that could contain the user has expired"
+on_erasure = "retain_legal"
+export = false
+export_exempt_reason = "Created after erasure; holds only a keyed hash"
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 1
+
+[[categories]]
+id = "privacy_incidents"
+name = "Personal data breach register"
+description = "Every personal data breach, its facts, effects and remedial action — including breaches not notified"
+data_subjects = ["users", "former_users"]
+purposes = ["Comply with GDPR Art 33(5)", "Learn from incidents"]
+lawful_basis = "legal_obligation"
+legal_ref = "GDPR Art 33(5)"
+retention = { policy = "fixed", days = 2190 }
+on_erasure = "retain_legal"
+retain_note = "Holds counts and categories, not individual identities"
+export = false
+export_exempt_reason = "Register contains no individual-level personal data"
+processors = ["hetzner", "scaleway", "backup_storage"]
+source = "system"
+stage = 1
+
+[[categories]]
+id = "application_logs"
+stored_in = "Container logs on the server (rotated) and Sentry (EU region)"
+name = "Application and error logs"
+description = "Request ids, user ids (never emails), routes, errors. PII is redacted by app.privacy.redaction before anything is written."
+data_subjects = ["users"]
+purposes = ["Operate and debug the service"]
+lawful_basis = "legitimate_interests"
+lia_ref = "docs/privacy/lia/0002-service-operation-and-cost-control.md"
+retention = { policy = "fixed", days = 30 }
+on_erasure = "delete"
+retention_note = "Enforced by log-shipper/Sentry retention settings, not by the database job"
+export = false
+export_exempt_reason = "Operational logs keyed by user id only; available on request through a manual DSAR"
+processors = ["hetzner", "sentry"]
+source = "system"
+stage = 0
+
+[[categories]]
+id = "not_personal"
+name = "Not personal data"
+description = "Reference data, company (legal person) data, aggregates with k >= 10, configuration"
+data_subjects = []
+purposes = ["Run the service"]
+lawful_basis = "not_applicable"
+retention = { policy = "not_applicable" }
+on_erasure = "not_applicable"
+export = false
+export_exempt_reason = "Not personal data"
+processors = []
+source = "system"
+stage = 0
+
+# ---------------------------------------------------------------------------------------------
+# Tables. `category` classifies every column; `columns` overrides individual columns.
+# user_column     column holding the user id (erasure deletes or anonymises by it)
+# cascade_from    parent table whose deletion removes these rows (FK must be ON DELETE CASCADE)
+# retention_clock timestamp column the fixed-retention timer runs from
+# keep_column     boolean column that pauses fixed retention while true (user chose 'Keep')
+# encrypted       columns encrypted at rest at application level
+# storage_keys    columns holding object-storage keys (objects deleted with the row)
+# ---------------------------------------------------------------------------------------------
+
+[[tables]]
+name = "users"
+category = "account_identity"
+user_column = "id"
+stage = 1
+
+[[tables]]
+name = "passkey_credentials"
+category = "authentication"
+user_column = "user_id"
+stage = 1
+
+[[tables]]
+name = "sessions"
+category = "sessions"
+user_column = "user_id"
+retention_clock = "created_at"
+stage = 1
+
+[[tables]]
+name = "consents"
+category = "consent_records"
+user_column = "user_id"
+pseudonymise_column = "subject_ref"
+stage = 1
+
+[[tables]]
+name = "audit_log"
+category = "security_audit"
+user_column = "user_id"
+retention_clock = "occurred_at"
+stage = 1
+
+[[tables]]
+name = "feature_flags"
+category = "not_personal"
+stage = 1
+
+[[tables]]
+name = "ai_usage"
+category = "ai_usage"
+user_column = "user_id"
+retention_clock = "occurred_at"
+stage = 1
+
+[[tables]]
+name = "data_subject_requests"
+category = "rights_requests"
+user_column = "user_id"
+retention_clock = "closed_at"
+pseudonymise_column = "subject_ref"
+stage = 1
+
+[[tables]]
+name = "erasure_tombstones"
+category = "erasure_tombstones"
+retention_clock = "erased_at"
+stage = 1
+
+[[tables]]
+name = "privacy_incidents"
+category = "privacy_incidents"
+retention_clock = "closed_at"
+stage = 1
+
+[[tables]]
+name = "uploaded_files"
+category = "cv_content"
+user_column = "user_id"
+storage_keys = ["s3_key"]
+stage = 2
+
+[[tables]]
+name = "cv_documents"
+category = "cv_content"
+user_column = "user_id"
+stage = 2
+
+[[tables]]
+name = "cv_versions"
+category = "cv_content"
+cascade_from = "cv_documents"
+stage = 2
+
+[[tables]]
+name = "cv_suggestions"
+category = "cv_content"
+cascade_from = "cv_versions"
+stage = 2
+
+[[tables]]
+name = "ats_checks"
+category = "cv_content"
+cascade_from = "cv_versions"
+stage = 2
+
+[[tables]]
+name = "skills"
+category = "not_personal"
+stage = 2
+
+[[tables]]
+name = "job_description_parses"
+category = "cv_content"
+user_column = "user_id"
+stage = 3
+
+[[tables]]
+name = "linkedin_profiles"
+category = "linkedin_profile"
+user_column = "user_id"
+stage = 3
+
+[[tables]]
+name = "linkedin_suggestions"
+category = "linkedin_profile"
+cascade_from = "linkedin_profiles"
+stage = 3
+
+[[tables]]
+name = "role_skill_demand"
+category = "not_personal"
+notes = "Nightly counts of ESCO skills in recent ads per role family; used for the LinkedIn keyword gap"
+stage = 5
+
+[[tables]]
+name = "waitlist_signups"
+category = "waitlist_and_beta_invites"
+retention_clock = "created_at"
+notes = "No user account yet, so no user link; erasure on request is by email (manual DSAR), and the launch email triggers deletion"
+stage = 4
+
+[[tables]]
+name = "beta_invites"
+category = "waitlist_and_beta_invites"
+user_column = "redeemed_by_user_id"
+retention_clock = "created_at"
+encrypted = ["invited_email"]
+stage = 4
+
+[[tables]]
+name = "job_sources"
+category = "not_personal"
+stage = 5
+
+[[tables]]
+name = "job_postings_raw"
+category = "public_job_ads_raw"
+retention_clock = "fetched_at"
+stage = 5
+
+[[tables]]
+name = "job_postings"
+category = "public_job_ads"
+retention_clock = "last_seen_at"
+stage = 5
+
+[[tables]]
+name = "companies"
+category = "not_personal"
+stage = 5
+
+[[tables]]
+name = "company_aliases"
+category = "not_personal"
+stage = 5
+
+[[tables]]
+name = "company_visa_data"
+category = "not_personal"
+stage = 5
+
+[[tables]]
+name = "critical_skills_occupations"
+category = "not_personal"
+stage = 5
+
+[[tables]]
+name = "company_reply_stats"
+category = "not_personal"
+notes = "Aggregates; only published above the minimum n (decisions-needed #13)"
+stage = 8
+
+[[tables]]
+name = "job_flags"
+category = "not_personal"
+stage = 5
+
+[[tables]]
+name = "job_reports"
+category = "user_reports"
+user_column = "user_id"
+retention_clock = "created_at"
+stage = 5
+
+[[tables]]
+name = "user_preferences"
+category = "job_preferences"
+user_column = "user_id"
+stage = 6
+
+[[tables]]
+name = "job_matches"
+category = "match_results"
+user_column = "user_id"
+retention_clock = "created_at"
+stage = 6
+
+[[tables]]
+name = "applications"
+category = "application_tracking"
+user_column = "user_id"
+stage = 7
+
+[[tables]]
+name = "application_events"
+category = "application_tracking"
+user_column = "user_id"
+stage = 7
+
+[[tables]]
+name = "agencies"
+category = "not_personal"
+stage = 7
+
+[[tables]]
+name = "agency_submissions"
+category = "application_tracking"
+cascade_from = "applications"
+stage = 7
+
+[[tables]]
+name = "cover_letters"
+category = "cv_content"
+user_column = "user_id"
+stage = 7
+
+[[tables]]
+name = "screening_answers"
+category = "cv_content"
+user_column = "user_id"
+stage = 7
+
+[[tables]]
+name = "inbound_addresses"
+category = "inbound_email_metadata"
+user_column = "user_id"
+stage = 8
+
+[[tables]]
+name = "inbound_emails"
+category = "inbound_email_metadata"
+user_column = "user_id"
+retention_clock = "received_at"
+encrypted = ["body_text"]
+storage_keys = ["raw_s3_key"]
+stage = 8
+[tables.columns]
+body_text = "inbound_email_content"
+raw_s3_key = "inbound_email_content"
+from_address = "inbound_email_content"
+subject = "inbound_email_content"
+
+[[tables]]
+name = "reply_classifications"
+category = "reply_and_rejection_scores"
+cascade_from = "inbound_emails"
+stage = 8
+
+[[tables]]
+name = "rejection_assessments"
+category = "reply_and_rejection_scores"
+cascade_from = "applications"
+stage = 8
+
+[[tables]]
+name = "cohorts"
+category = "not_personal"
+notes = "Aggregates only, k >= 10"
+stage = 9
+
+[[tables]]
+name = "benchmarks"
+category = "not_personal"
+notes = "Aggregates only, k >= 10"
+stage = 9
+
+[[tables]]
+name = "experiments"
+category = "experiments"
+user_column = "user_id"
+notes = "user_id is NULL for global experiments"
+stage = 9
+
+[[tables]]
+name = "experiment_assignments"
+category = "experiments"
+cascade_from = "applications"
+stage = 9
+
+[[tables]]
+name = "effect_estimates"
+category = "not_personal"
+notes = "User-scope estimates are computed on the fly and not stored; stored rows are global or cohort aggregates"
+stage = 9
+
+[[tables]]
+name = "interviews"
+category = "application_tracking"
+cascade_from = "applications"
+stage = 10
+
+[[tables]]
+name = "stories"
+category = "application_tracking"
+user_column = "user_id"
+stage = 10
+
+[[tables]]
+name = "pitches"
+category = "application_tracking"
+user_column = "user_id"
+stage = 10
+
+[[tables]]
+name = "question_prep"
+category = "application_tracking"
+user_column = "user_id"
+stage = 10
+
+[[tables]]
+name = "practice_sessions"
+category = "application_tracking"
+notes = "Which question was practised and when; the recording content lives in recordings"
+user_column = "user_id"
+stage = 10
+
+[[tables]]
+name = "recordings"
+category = "practice_transcripts"
+cascade_from = "practice_sessions"
+retention_clock = "created_at"
+keep_column = "keep"
+storage_keys = ["audio_s3_key"]
+stage = 10
+[tables.columns]
+audio_s3_key = "practice_audio"
+
+[[tables]]
+name = "reported_questions"
+category = "not_personal"
+notes = "No user_id. Free text passes app.privacy.redaction and manual review before it is stored; only shown when >= 3 independent reports"
+stage = 10
+
+[[tables]]
+name = "offers"
+category = "application_tracking"
+cascade_from = "applications"
+stage = 10
+
+[[tables]]
+name = "fairness_demographics"
+category = "fairness_demographics"
+user_column = "user_id"
+schema = "sensitive"
+encrypted = ["gender", "nationality_group", "age_band", "disability"]
+stage = 11
+
+[[tables]]
+name = "subscriptions"
+category = "billing_records"
+user_column = "user_id"
+pseudonymise_column = "subject_ref"
+retention_clock = "ended_at"
+stage = 4
+
+[[tables]]
+name = "entitlements"
+category = "entitlements"
+user_column = "user_id"
+stage = 4
+
+[[tables]]
+name = "guarantee_tracking"
+category = "entitlements"
+user_column = "user_id"
+stage = 4
+
+[[tables]]
+name = "organisations"
+category = "not_personal"
+stage = 12
+
+[[tables]]
+name = "org_members"
+category = "organisation_membership"
+user_column = "user_id"
+stage = 12
+
+[[tables]]
+name = "org_cohorts"
+category = "not_personal"
+notes = "Aggregates only, k >= 10"
+stage = 12
+
+# ---------------------------------------------------------------------------------------------
+# Short-lived data outside Postgres
+# ---------------------------------------------------------------------------------------------
+
+[[ephemeral]]
+key = "auth:code:<hmac(email)>"
+store = "redis"
+category = "transient_auth"
+ttl_seconds = 600
+
+[[ephemeral]]
+key = "auth:magic:<sha256(token)>"
+store = "redis"
+category = "transient_auth"
+ttl_seconds = 600
+
+[[ephemeral]]
+key = "webauthn:challenge:<random>"
+store = "redis"
+category = "transient_auth"
+ttl_seconds = 300
+
+[[ephemeral]]
+key = "rl:<scope>:<hmac(ip|email)>"
+store = "redis"
+category = "transient_auth"
+ttl_seconds = 3600
+
+[[ephemeral]]
+key = "export:<user_id>.zip (object storage)"
+store = "object_storage"
+category = "account_identity"
+ttl_seconds = 86400
+
+[[ephemeral]]
+key = "ai:cache:<sha256(prompt_version|model|input)>"
+store = "redis"
+category = "cv_content"
+ttl_seconds = 604800
+
+[[ephemeral]]
+key = "cv-check upload (object storage, no account)"
+store = "object_storage"
+category = "cv_content"
+ttl_seconds = 86400

@@ -1,0 +1,15 @@
+# Seed list of disposable email domains. Stage 1: refresh weekly from
+# https://github.com/disposable-email-domains/disposable-email-domains (check licence).
+10minutemail.com
+dispostable.com
+getnada.com
+guerrillamail.com
+guerrillamail.net
+maildrop.cc
+mailinator.com
+sharklasers.com
+temp-mail.org
+tempmail.com
+throwawaymail.com
+trashmail.com
+yopmail.com

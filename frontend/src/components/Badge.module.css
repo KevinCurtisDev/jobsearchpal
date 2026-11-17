@@ -1,0 +1,34 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-footnote-size);
+  font-weight: 500;
+  line-height: 1.3;
+}
+.positive {
+  background: var(--status-positive-bg);
+  color: var(--status-positive-text);
+}
+.caution {
+  background: var(--status-caution-bg);
+  color: var(--status-caution-text);
+}
+.critical {
+  background: var(--status-critical-bg);
+  color: var(--status-critical-text);
+}
+.info {
+  background: var(--status-info-bg);
+  color: var(--status-info-text);
+}
+.criticalSkills {
+  background: var(--status-critical-skills-bg);
+  color: var(--status-critical-skills-text);
+}
+.neutral {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-text);
+}

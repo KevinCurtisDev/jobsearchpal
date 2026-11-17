@@ -1,0 +1,6 @@
+dist
+coverage
+playwright-report
+package-lock.json
+src/api/schema.d.ts
+src/styles/tokens.css

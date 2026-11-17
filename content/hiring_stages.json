@@ -1,0 +1,21 @@
+{
+  "description": "Published hiring-funnel averages used for stage odds until Hearback has its own data. Shown as 'public data', low confidence. Review every 6 months.",
+  "checked": "2026-10-21",
+  "stages": [
+    {"key": "applied", "label": "Applied", "pass_rate": 0.08, "next": "screening", "source": "gem"},
+    {"key": "screening", "label": "First screen or call", "pass_rate": 0.33, "next": "interview", "source": "gem"},
+    {"key": "interview", "label": "Final interviews", "pass_rate": 0.45, "next": "offer", "source": "gem"},
+    {"key": "offer", "label": "Offer", "accept_rate": 0.84, "source": "gem"}
+  ],
+  "sources": {
+    "gem": {"name": "Gem, Conversion Rate Benchmarks", "url": "https://lp.gem.com/rs/972-IVV-330/images/Conversion_Rate_Benchmarks_Infographic.pdf", "notes": "About 12 million candidates in Gem customers' pipelines; mostly US tech hiring"},
+    "careerplug": {"name": "CareerPlug 2025 Recruiting Metrics Report", "url": "https://www.careerplug.com/recruiting-metrics-and-kpis/", "notes": "2024 data, 10M+ applications, small businesses: ~180 applicants per hire, 3% interviewed"}
+  },
+  "encouragement": {
+    "applied": "This is the starting line, and it's the same for everyone: most applications stop here, usually before a person reads them. The next step, a first call, makes your odds about {multiplier_next} times better.",
+    "screening": "A person picked you out. Your odds are now about {multiplier_from_applied} times better than when you applied.",
+    "interview": "You've gone from about 1 in {one_in_applied} to about 1 in {one_in_here}. Very few applicants get this far. This is where preparation makes the biggest difference.",
+    "rejected_fast": "Probably no person saw your CV, so this is not a judgement of it.",
+    "rejected_after_interview": "Getting to interview means your CV and experience were competitive. One no at this stage is common, even for people who get an offer soon after."
+  }
+}

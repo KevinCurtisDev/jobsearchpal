@@ -1,0 +1,54 @@
+# Tier 1 "resilient lean": run this file on EACH of the two app servers behind the load balancer.
+# PostgreSQL and Redis are managed services; their URLs come from .env. Only ONE server runs `beat`
+# (set COMPOSE_PROFILES=scheduler on that server). See docs/12-deployment-and-ops.md.
+# Images are built in CI and pulled from GHCR (set IMAGE_TAG to the release SHA or tag).
+name: offerlight-prod
+
+x-backend: &backend
+  image: ghcr.io/${GITHUB_OWNER}/offerlight-backend:${IMAGE_TAG}
+  env_file: ../.env
+  restart: unless-stopped
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      S3_PUBLIC_HOST: ${S3_PUBLIC_HOST}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api, web]
+
+  web:
+    image: ghcr.io/${GITHUB_OWNER}/offerlight-frontend:${IMAGE_TAG}
+    restart: unless-stopped
+
+  api:
+    <<: *backend
+    command: ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8000"]
+
+  worker:
+    <<: *backend
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "-l", "info"]
+
+  beat:
+    <<: *backend
+    command: ["celery", "-A", "app.workers.celery_app", "beat", "-l", "info", "-s", "/tmp/celerybeat-schedule"]
+    profiles: ["scheduler"]  # run beat on one server only, or scheduled jobs fire twice
+
+  migrate:
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    profiles: ["migrate"]
+
+volumes:
+  caddy_data:
+  caddy_config:

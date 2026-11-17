@@ -1,0 +1,44 @@
+{
+  "conventions": {
+    "IE": {
+      "label": "Ireland",
+      "max_pages": 2,
+      "photo": false,
+      "date_of_birth": false,
+      "marital_status": false,
+      "spelling": "en-IE",
+      "title": "CV",
+      "notes": "Irish English spelling; include right-to-work status if relevant (e.g. Stamp 4)."
+    },
+    "UK": {
+      "label": "United Kingdom",
+      "max_pages": 2,
+      "photo": false,
+      "date_of_birth": false,
+      "marital_status": false,
+      "spelling": "en-GB",
+      "title": "CV",
+      "notes": "No photo; references available on request is unnecessary."
+    },
+    "EU": {
+      "label": "Rest of EU",
+      "max_pages": 2,
+      "photo": "optional",
+      "date_of_birth": "optional",
+      "marital_status": false,
+      "spelling": "en-GB",
+      "title": "CV",
+      "notes": "Photo and date of birth vary by country; default to omitting them."
+    },
+    "US": {
+      "label": "United States",
+      "max_pages": 1,
+      "photo": false,
+      "date_of_birth": false,
+      "marital_status": false,
+      "spelling": "en-US",
+      "title": "Resume",
+      "notes": "One page for under 10 years' experience; US spelling."
+    }
+  }
+}
